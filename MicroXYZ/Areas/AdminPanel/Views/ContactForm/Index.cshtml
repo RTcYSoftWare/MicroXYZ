@@ -1,0 +1,149 @@
+﻿@model List<ContactForm>
+@{
+    ViewData["Title"] = "ContactForms";
+    Layout = "~/Pages/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="vh-100">
+    <div class="col-12">
+        <div class="bg-light rounded h-100 p-4">
+            <div class="mb-4 d-flex flex-lg-row justify-content-between align-items-center">
+                <h6>ContactForm @Model.Count Adet Bulunmaktadır.</h6>
+                @*@if (ViewBag.IsActive)
+                {
+                <a href="/admin/contact-page-setting-edit" type="button" class="btn btn-outline-success"><i class="fa fa-plus me-2"></i>Yeni Ekle</a>
+                }*@
+            </div>
+            @if (Model.Any())
+            {
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Name Surname</th>
+                            <th scope="col">Email</th>
+                            <th scope="col">Message</th>
+                            @*<th scope="col">Message</th>*@
+                            <th scope="col">Created At</th>
+                            <th scope="col">Durumu</th>
+                            <th scope="col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var contactForm in Model)
+                        {
+                            <tr>
+                                <td>@contactForm.NameSurname</td>
+                                <td>@contactForm.Email</td>
+                                <td>@(contactForm.Message != null ? contactForm.Message.Length > 25 ? contactForm.Message.Substring(0,25) + "..." : contactForm.Message : null)</td>
+                                @*<td>@contactForm.Phone</td>*@
+                                <td>@contactForm.CreatedAt</td>
+                                <td>
+                                    <p class="@(contactForm.IsActive ? "bg-success" : "bg-danger") table-is-active-baget ">
+                                        @(contactForm.IsActive ? "Aktif" : "Silindi")
+                                    </p>
+                                </td>
+                                <td>
+                                    @if (ViewBag.IsActive)
+                                    {
+                                        @*<a href="/admin/contact-page-setting-edit/@contactForm.Id" class="m-0 btn btn-sm btn-sm-square btn-outline-warning"><i class="fa fa-pen"></i></a>*@
+                                    }
+
+                                    @if (contactForm.IsActive)
+                                    {
+                                        @*<button data="@contactForm.Id" data-isActive="@contactForm.IsActive" type="button" class="contactPageSettingDeleteOrRestoreDeleteButton m-0 btn btn-sm btn-sm-square btn-outline-danger"><i class="fa fa-trash"></i></button>*@
+                                    }
+                                    else
+                                    {
+                                        @*<button data="@contactForm.Id" type="button" class="contactPageSettingDeleteOrRestoreDeleteButton m-0 btn btn-sm btn-sm-square btn-outline-info"><i class="fa fa-recycle"></i></button>*@
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+
+            else
+            {
+                <div class="mb-4 d-flex flex-lg-row justify-content-between align-items-center">
+                    <h6>Kayıtlı Veri Bulunamadı !</h6>
+                </div>
+            }
+
+            @*<div class="mb-4 d-flex flex-lg-row justify-content-between align-items-center">
+            <h6>
+            Not: Ana sayfanızda gözükmesini istediğiniz bigilerin aktif olduğundan emin olunuz. Birden fazla aktif olması halinde
+            sıralamada ilk aktif olan ana sayfanızda gözükür.
+            </h6>
+            </div>*@
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+
+    <script>
+        $(".nav-link").removeClass("active");
+
+        $("#contactPageNavItem").addClass("active");
+        $("#contactPageNavItem").addClass("show");
+        $(".contact-page-nav-item-menu").addClass("show");
+
+        $(".contactPageSettingDeleteOrRestoreDeleteButton").click(function() {
+            var contactPageSettingId = $(this).attr("data");
+            var contactPageSettingIsActive = $(this).attr("data-isActive");
+
+            console.log(contactPageSettingId);
+
+            swal({
+                title: contactPageSettingIsActive ? "Silmek İstediğinize Emin Misiniz ?" : "Silinmiş Ögeyi Geri Almak İstediğinze Emin Misiniz ?",
+                text: contactPageSettingIsActive ? "Bu işlemi silerseniz ana sayfanızda gözükmez!" : "Silinmiş ögeyi geri alırsanız ana sayfanızda gözükecektir !",
+                icon: "warning",
+                buttons: ["İptal", contactPageSettingIsActive ? "Sil" : "Geri Al"],
+                dangerMode: true,
+            })
+                .then((willDelete) => {
+                    if (willDelete) {
+
+                        $.ajax({
+                            url: "/admin/contact-page-setting-delete",
+                            type: "POST",
+                            data: { id: contactPageSettingId, isActive: !contactPageSettingIsActive },
+                            success: function(result) {
+                                console.log(result);
+                                if (result != null) {
+                                    if (result.code == 20) {
+                                        swal("Silindi ! Bu bilgiler artık anasayfanızda gözükmeyecek !", {
+                                            icon: "success",
+                                        }).then((value) => {
+                                            location.reload();
+                                        });
+                                    }
+                                    if (result.code == 22) {
+                                        swal("Silme İşlemi Geri Alındı! Bu bilgiler artık ansayfanızda gözükecek !", {
+                                            icon: "success",
+                                        }).then((value) => {
+                                            location.reload();
+                                        });
+                                    }
+                                    if (result.code == 9998) {
+                                        swal("Erişim Reddedildi !", {
+                                            icon: "error",
+                                        });
+                                    }
+                                    if (result.code == 21) {
+                                        swal("Silinecek Eleman Bulunamadı !", {
+                                            icon: "error",
+                                        });
+                                    }
+                                }
+                            }
+                        });
+                    } else {
+                        swal(contactPageSettingIsActive ? "Silme işlemi iptal edildi!" : "Geri alma iptal edildi!");
+                    }
+                });
+        });
+
+    </script>
+}

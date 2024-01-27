@@ -1,0 +1,143 @@
+﻿@model List<ContactFormSubject>
+@{
+    ViewData["Title"] = "Contact From Subjects";
+    Layout = "~/Pages/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="vh-100">
+    <div class="col-12">
+        <div class="bg-light rounded h-100 p-4">
+            <div class="mb-4 d-flex flex-lg-row justify-content-between align-items-center">
+                <h6>ContactFormSubject @Model.Count Adet Bulunmaktadır.</h6>
+                @if (ViewBag.IsActive)
+                {
+                    <a href="/admin/contact-form-subject-edit" type="button" class="btn btn-outline-success"><i class="fa fa-plus me-2"></i>Yeni Ekle</a>
+                }
+            </div>
+
+            @if (Model.Any())
+            {
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Name</th>
+                            <th scope="col">Created At</th>
+                            <th scope="col">Durumu</th>
+                            <th scope="col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var contactFormSubject in Model)
+                        {
+                            <tr>
+                                <td>@contactFormSubject.Name</td>
+                                <td>@contactFormSubject.CreatedAt</td>
+                                <td>
+                                    <p class="@(contactFormSubject.IsActive ? "bg-success" : "bg-danger") table-is-active-baget ">
+                                        @(contactFormSubject.IsActive ? "Aktif" : "Silindi")
+                                    </p>
+                                </td>
+                                <td>
+                                    @if (ViewBag.IsActive)
+                                    {
+                                        <a href="/admin/contact-form-subject-edit/@contactFormSubject.Id" class="m-0 btn btn-sm btn-sm-square btn-outline-warning"><i class="fa fa-pen"></i></a>
+                                    }
+
+                                    @if (contactFormSubject.IsActive)
+                                    {
+                                        <button data="@contactFormSubject.Id" data-isActive="@contactFormSubject.IsActive" type="button" class="contactFormSubjectDeleteOrRestoreDeleteButton m-0 btn btn-sm btn-sm-square btn-outline-danger"><i class="fa fa-trash"></i></button>
+                                    }
+                                    else
+                                    {
+                                        <button data="@contactFormSubject.Id" type="button" class="contactFormSubjectDeleteOrRestoreDeleteButton m-0 btn btn-sm btn-sm-square btn-outline-info"><i class="fa fa-recycle"></i></button>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                <div class="mb-4 d-flex flex-lg-row justify-content-between align-items-center">
+                    <h6>
+                        Not: Ana sayfanızda gözükmesini istediğiniz bigilerin aktif olduğundan emin olunuz.
+                    </h6>
+                </div>
+            }
+
+            else
+            {
+                <div class="mb-4 d-flex flex-lg-row justify-content-between align-items-center">
+                    <h6>Kayıtlı Veri Bulunamadı !</h6>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+
+    <script>
+        $(".nav-link").removeClass("active");
+
+        $("#contactPageNavItem").addClass("active");
+        $("#contactPageNavItem").addClass("show");
+        $(".contact-page-nav-item-menu").addClass("show");
+
+        $(".contactFormSubjectDeleteOrRestoreDeleteButton").click(function() {
+            var contactFormSubjectId = $(this).attr("data");
+            var contactFormSubjecIsActive = $(this).attr("data-isActive");
+
+            console.log(contactFormSubjectId);
+
+            swal({
+                title: contactFormSubjecIsActive ? "Silmek İstediğinize Emin Misiniz ?" : "Silinmiş Ögeyi Geri Almak İstediğinze Emin Misiniz ?",
+                text: contactFormSubjecIsActive ? "Bu işlemi silerseniz ana sayfanızda gözükmez!" : "Silinmiş ögeyi geri alırsanız ana sayfanızda gözükecektir !",
+                icon: "warning",
+                buttons: ["İptal", contactFormSubjecIsActive ? "Sil" : "Geri Al"],
+                dangerMode: true,
+            })
+                .then((willDelete) => {
+                    if (willDelete) {
+
+                        $.ajax({
+                            url: "/admin/contact-form-subject-delete",
+                            type: "POST",
+                            data: { id: contactFormSubjectId, isActive: !contactFormSubjecIsActive },
+                            success: function(result) {
+                                console.log(result);
+                                if (result != null) {
+                                    if (result.code == 25) {
+                                        swal("Silindi ! Bu bilgiler artık anasayfanızda gözükmeyecek !", {
+                                            icon: "success",
+                                        }).then((value) => {
+                                            location.reload();
+                                        });
+                                    }
+                                    if (result.code == 27) {
+                                        swal("Silme İşlemi Geri Alındı! Bu bilgiler artık ansayfanızda gözükecek !", {
+                                            icon: "success",
+                                        }).then((value) => {
+                                            location.reload();
+                                        });
+                                    }
+                                    if (result.code == 9998) {
+                                        swal("Erişim Reddedildi !", {
+                                            icon: "error",
+                                        });
+                                    }
+                                    if (result.code == 26) {
+                                        swal("Silinecek Eleman Bulunamadı !", {
+                                            icon: "error",
+                                        });
+                                    }
+                                }
+                            }
+                        });
+                    } else {
+                        swal(contactFormSubjecIsActive ? "Silme işlemi iptal edildi!" : "Geri alma iptal edildi!");
+                    }
+                });
+        });
+
+    </script>
+}

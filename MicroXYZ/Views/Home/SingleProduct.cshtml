@@ -1,0 +1,202 @@
+﻿@model MicroXYZ.Database.Product
+@{
+    ViewData["Title"] = Model.Title;
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+}
+
+<style>
+    .portfolio-block:before {
+        background: none;
+    }
+
+    .modal-buy {
+        display: none; /* Hidden by default */
+        position: fixed; /* Stay in place */
+        z-index: 1000; /* Sit on top */
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgb(0,0,0); /* Fallback color */
+        background-color: rgba(0,0,0,85%); /* Black w/ opacity */
+    }
+</style>
+
+@if (Model != null)
+{
+    <section class="hero-area overlay" style="@(Model.ProductImages.FirstOrDefault(x=> x.IsBanner) != null ? "background-image: url('/product-images/" + @Model.ProductImages.FirstOrDefault(x=> x.IsBanner).Image + "')" : "background-image: url('images/banner/hero-area.jpg')")">
+        <!-- <video autoplay muted loop class="hero-video">
+            <source src="images/banner/hero-video.mp4" type="video/mp4">
+        </video> -->
+        <div class="block">
+            @*            @if (Model.HomePageSetting.Video != null)
+        {
+        <div class="video-button">
+        <a class="popup-video" href="@Model.HomePageSetting.Video">
+        <i class="tf-ion-play"></i>
+        </a>
+        </div>
+        }*@
+            <h1>@Model.Title</h1>
+            <p style="font-size: 35px; font-weight: bold;">
+                @Model.Price TL
+            </p>
+            @*<a data-scroll href="#services" class="btn btn-transparent">Bizi Keşfedin</a>*@
+        </div>
+    </section>
+
+    <section class="call-to-action section-sm bg-1 overly">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <h2 style="font-size:35px;">@Model.Title</h2>
+                    <p style="font-size:20px;">@Model.Description</p>
+                    <p style="font-size:30px;font-weight:bold;">@Model.Price TL</p>
+                    <button id="buy-product-button" class="btn btn-main">Satın Al</button>
+                </div>
+            </div>
+        </div>
+    </section>
+}
+@if (Model.ProductImages.Any())
+{
+    <section class="portfolio section" id="portfolio">
+        <div class="container">
+            <div class="row ">
+                <div class="col-lg-12">
+                    <div class="title text-center">
+                        <h2>Ürün <span class="color">Fotoğrafları</span></h2>
+                        <div class="border"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row filtr-container">
+
+                @foreach (var productImage in Model.ProductImages)
+                {
+                    <div class="col-lg-4 ">
+                        <div class="portfolio-block">
+
+                            <img class="img-responsive" style="max-height: 250px; min-height: 250px;" src="~/product-images/@productImage.Image" alt="">
+
+                            <div class="caption">
+                                <a class="search-icon image-popup" data-effect="mfp-with-zoom" href="~/product-images/@productImage.Image" data-lightbox="image-1">
+                                    <i class="tf-ion-android-search"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+}
+<div id="buyModal" class="modal-buy">
+    <div class="modal-content-buy" style="background: #737f8a; width: 60%; padding: 3%; margin: auto;">
+        <h3 style="width: max-content;margin: auto;">
+            Bilgileriniz Giriniz.
+        </h3>
+        <form style="width: 60%; margin: auto; margin-top:2%;" id="contact-form">
+
+            <div class="form-group">
+                <input name="nameSurname" type="text" placeholder="Adınızı ve Soyadınızı Giriniz." class="form-control" id="nameSurname">
+                @*<span asp-validation-for="nameSurname" class="text-danger"></span>*@
+            </div>
+
+            <div class="form-group">
+                <input name="email" type="email" placeholder="Mail Adresinizi Giriniz." class="form-control" id="email">
+            </div>
+
+            <div class="form-group">
+                <input name="phone" type="text" placeholder="Telefon Numaranızı Giriniz." class="form-control" id="phone">
+            </div>
+
+            <div id="cf-submit">
+                <input id="buyed-product" type="button" data="@Model.Id" class="btn btn-transparent" value="Satın Al">
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+
+    <script src="https://unpkg.com/imask"></script>
+
+    <script>
+
+        var phoneMask = IMask(
+            document.getElementById('phone'), {
+            mask: '+{9}(000)000-00-00'
+        });
+
+        var modal = $("#buyModal");
+
+        var productId = 0;
+
+        $("#buy-product-button").click(function() {
+            $(".modal-buy").css("display", "flex");
+        });
+
+        $("#buyed-product").click(function() {
+            productId = $(this).attr("data");
+
+            let nameSurname = $("#nameSurname").val();
+            let email = $("#email").val();
+            let phone = $("#phone").val();
+
+            //console.log(productId);
+            //console.log(nameSurname);
+            //console.log(email);
+            //console.log(phone);
+
+            if (nameSurname != "" && email != "" && phone != "") {
+                $.ajax({
+                    url: "/product",
+                    method: "POST",
+                    data: { id: productId, nameSurname: nameSurname, email: email, phone: phone },
+                    success: function(result) {
+
+                        if (result != null) {
+                            if (result.code == 1) {
+                                swal({
+                                    title: "Satın Alma İsteğiniz Alındı !",
+                                    text: "İsteğiniz tarafımızca işleme alındı. En kısa sürede ilgili birimlerimiz sizlerle iletişime geçecektir.!",
+                                    icon: "success",
+                                });
+
+                                $(".modal-buy").css("display", "none");
+                            }
+
+                            else {
+                                swal({
+                                    title: "Biglileriniz Hatalı !",
+                                    text: "Lütfen girdiğiniz bilgilerin doğruluğundan emin olun. Problemin devam etmesi halinde bizimle 'İletişim Formu' üzerinden iletişime geçiniz.",
+                                    icon: "error",
+                                });
+
+                                $(".modal-buy").css("display", "none");
+                            }
+                        }
+                    }
+                })
+            }
+
+            else {
+                swal({
+                    title: "Bilgileriniz Eksik !",
+                    text: "Lütfen Bilgilerinizi Eksiksiz ve Doğru Giriniz !",
+                    icon: "error",
+                });
+            }
+        })
+
+
+        window.onclick = function(event) {
+            if (event.target == modal[0]) {
+                modal.css("display", "none");
+            }
+        }
+    </script>
+}

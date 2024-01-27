@@ -1,0 +1,161 @@
+﻿@model ProductCreateOrUpdateViewModel
+@{
+    ViewData["Title"] = "CreateOrUpdateProduct";
+    Layout = "~/Pages/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="">
+    <div class="col-12">
+        <div class="bg-light rounded h-100 p-4">
+            <h6 class="mb-4">@(Model.Product.Id == 0 ? "Yeni Product Ekleyin" : "Product 'i Güncelleyin" )</h6>
+            <form asp-action="/admin/product-category-edit" method="post" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <input asp-for="Product.Id" type="hidden" value="@Model.Product.Id" />
+
+                <div class="mb-3">
+                    <label asp-for="Product.Title" for="homePageSettingTitleInput" class="form-label">Title <span class="text-danger">*</span></label>
+                    <input asp-for="Product.Title" type="text" class="form-control" id="homePageSettingTitleInput">
+                    <span asp-validation-for="Product.Title" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Product.Description" for="homePageSettingTitleInput2" class="form-label">Description <span class="text-danger">*</span></label>
+                    <input asp-for="Product.Description" type="text" class="form-control" id="homePageSettingTitleInput2" aria-describedby="processPriceHelp">
+                    <span asp-validation-for="Product.Description" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Product.Price" for="processPriceInput" class="form-label">Price <span class="text-danger">*</span></label>
+                    <input asp-for="Product.Price" type="text" class="form-control" id="processPriceInput" aria-describedby="processPriceHelp">
+                    <span asp-validation-for="Product.Price" class="text-danger"></span>
+                    <div id="processPriceHelp" class="form-text">
+                        Küsuratı "VİRGÜL (,)" ile ayırınız. Örn: ₺ 12,99 gibi.
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Product.ProductCategoryId" class="form-label">Select Product Category <span class="text-danger">*</span></label>
+                    <select asp-for="Product.ProductCategoryId" class="form-select mb-3" aria-label="Select Product Category" asp-items="@Model.ProductCategories.Select(x => new SelectListItem{Text = x.Title, Value = x.Id.ToString()})">
+                        <option selected>Select Product Category</option>
+                    </select>
+                    <span asp-validation-for="Product.ProductCategoryId" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label for="homePageSettingVideoInput" class="form-label">Icon <span class="text-danger">*</span></label>
+                    <input name="formFiles" type="file" multiple class="form-control" id="homePageSettingVideoInput">
+                    <span class="text-danger"></span>
+                </div>
+
+                @if (Model.Product.ProductImages != null)
+                {
+                    foreach (var productImage in Model.Product.ProductImages)
+                    {
+                        <div class="mb-4" style="width: 100%; box-sizing: border-box; position: relative;">
+                            <label for="homePageSettingImage" class="form-label">Yüklü Image</label>
+                            <br>
+                            <img style="width: 20%; box-sizing: border-box; position: relative;" id="homePageSettingImage" src="/product-images/@productImage.Image" />
+                            <label style="margin: 0 0 0 5%;" for="is-banner-checbox-@productImage.Id">Banner Fotosu Mu ?</label>
+                            <input class="is-banner-radio-button" id="is-banner-checbox-@productImage.Id" data="@productImage.Id" data-productId="@productImage.ProductId" name="isBannerRadioButton" type="radio" @(productImage.IsBanner ? "checked" : "")/>
+                            <button style="margin: 0 0 0 5%;" data="@productImage.Id" data-isActive="@productImage.IsActive" type="button" class="productImageDeleteOrRestoreDeleteButton ml-lg-5 btn btn-sm btn-sm-square btn-outline-danger"><i class="fa fa-trash"></i></button>
+                        </div>
+                    }
+                }
+
+                <button type="submit" class="btn btn-primary">Kaydet</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+
+        $(".nav-link").removeClass("active");
+
+        $("#productNavItem").addClass("active");
+        $("#productNavItem").addClass("show");
+        $(".product-nav-item-menu").addClass("show");
+
+        $(".is-banner-radio-button").change(function() {
+            photoId = $(this).attr("data");
+            productId = $(this).attr("data-productId");
+
+            //console.log(photoId);
+            //console.log(productId);
+
+            $.ajax({
+                url: "/admin/product-image-make-banner-photo",
+                type: "POST",
+                data: { id: photoId, productId: productId },
+                success: function(result) {
+                    if (result != null) {
+                        if (result.code == 59) {
+                            swal("Banner Photo Changed !", {
+                                icon: "success",
+                            });
+                        }
+                    }
+                }
+            });
+        })
+
+        $(".productImageDeleteOrRestoreDeleteButton").click(function() {
+            var productImageId = $(this).attr("data");
+            var productImageIsActive = $(this).attr("data-isActive");
+
+            console.log(productImageId);
+
+            swal({
+                title: productImageIsActive ? "Silmek İstediğinize Emin Misiniz ?" : "Silinmiş Ögeyi Geri Almak İstediğinze Emin Misiniz ?",
+                text: productImageIsActive ? "Bu işlemi silerseniz ana sayfanızda gözükmez!" : "Silinmiş ögeyi geri alırsanız ana sayfanızda gözükecektir !",
+                icon: "warning",
+                buttons: ["İptal", productImageIsActive ? "Sil" : "Geri Al"],
+                dangerMode: true,
+            })
+                .then((willDelete) => {
+                    if (willDelete) {
+
+                        $.ajax({
+                            url: "/admin/product-image-delete",
+                            type: "POST",
+                            data: { id: productImageId, isActive: !productImageIsActive },
+                            success: function(result) {
+                                console.log(result);
+                                if (result != null) {
+                                    if (result.code == 60) {
+                                        swal("Silindi ! Bu bilgiler artık anasayfanızda gözükmeyecek !", {
+                                            icon: "success",
+                                        }).then((value) => {
+                                            location.reload();
+                                        });
+                                    }
+                                    if (result.code == 62) {
+                                        swal("Silme İşlemi Geri Alındı! Bu bilgiler artık ansayfanızda gözükecek !", {
+                                            icon: "success",
+                                        }).then((value) => {
+                                            location.reload();
+                                        });
+                                    }
+                                    if (result.code == 9998) {
+                                        swal("Erişim Reddedildi !", {
+                                            icon: "error",
+                                        });
+                                    }
+                                    if (result.code == 61) {
+                                        swal("Silinecek Eleman Bulunamadı !", {
+                                            icon: "error",
+                                        });
+                                    }
+                                }
+                            }
+                        });
+                    } else {
+                        swal(productImageIsActive ? "Silme işlemi iptal edildi!" : "Geri alma iptal edildi!");
+                    }
+                });
+        });
+
+    </script>
+}

@@ -1,0 +1,145 @@
+﻿@model List<ProductCategory>
+@{
+    ViewData["Title"] = "Product Categories";
+    Layout = "~/Pages/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="vh-100">
+    <div class="col-12">
+        <div class="bg-light rounded h-100 p-4">
+            <div class="mb-4 d-flex flex-lg-row justify-content-between align-items-center">
+                <h6>ProductCategory @Model.Count Adet Bulunmaktadır.</h6>
+                @if (ViewBag.IsActive)
+                {
+                    <a href="/admin/product-category-edit" type="button" class="btn btn-outline-success"><i class="fa fa-plus me-2"></i>Yeni Ekle</a>
+                }
+            </div>
+
+            @if (Model.Any())
+            {
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Title</th>
+                            <th scope="col">Sequence</th>
+                            <th scope="col">Created At</th>
+                            <th scope="col">Durumu</th>
+                            <th scope="col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var productCategory in Model)
+                        {
+                            <tr>
+                                <td>@productCategory.Title</td>
+                                <td>@productCategory.Sequence</td>
+                                <td>@productCategory.CreatedAt</td>
+                                <td>
+                                    <p class="@(productCategory.IsActive ? "bg-success" : "bg-danger") table-is-active-baget ">
+                                        @(productCategory.IsActive ? "Aktif" : "Silindi")
+                                    </p>
+                                </td>
+                                <td>
+                                    @if (ViewBag.IsActive)
+                                    {
+                                        <a href="/admin/product-category-edit/@productCategory.Id" class="m-0 btn btn-sm btn-sm-square btn-outline-warning"><i class="fa fa-pen"></i></a>
+                                    }
+
+                                    @if (productCategory.IsActive)
+                                    {
+                                        <button data="@productCategory.Id" data-isActive="@productCategory.IsActive" type="button" class="productCategoryDeleteOrRestoreDeleteButton m-0 btn btn-sm btn-sm-square btn-outline-danger"><i class="fa fa-trash"></i></button>
+                                    }
+                                    else
+                                    {
+                                        <button data="@productCategory.Id" type="button" class="productCategoryDeleteOrRestoreDeleteButton m-0 btn btn-sm btn-sm-square btn-outline-info"><i class="fa fa-recycle"></i></button>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                <div class="mb-4 d-flex flex-lg-row justify-content-between align-items-center">
+                    <h6>
+                        Not: Ana sayfanızda gözükmesini istediğiniz bigilerin aktif olduğundan emin olunuz.
+                    </h6>
+                </div>
+            }
+
+            else
+            {
+                <div class="mb-4 d-flex flex-lg-row justify-content-between align-items-center">
+                    <h6>Kayıtlı Veri Bulunamadı !</h6>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+
+    <script>
+        $(".nav-link").removeClass("active");
+
+        $("#productNavItem").addClass("active");
+        $("#productNavItem").addClass("show");
+        $(".product-nav-item-menu").addClass("show");
+
+        $(".productCategoryDeleteOrRestoreDeleteButton").click(function() {
+            var productCategoryId = $(this).attr("data");
+            var productCategoryIsActive = $(this).attr("data-isActive");
+
+            console.log(productCategoryId);
+
+            swal({
+                title: productCategoryIsActive ? "Silmek İstediğinize Emin Misiniz ?" : "Silinmiş Ögeyi Geri Almak İstediğinze Emin Misiniz ?",
+                text: productCategoryIsActive ? "Bu işlemi silerseniz ana sayfanızda gözükmez!" : "Silinmiş ögeyi geri alırsanız ana sayfanızda gözükecektir !",
+                icon: "warning",
+                buttons: ["İptal", productCategoryIsActive ? "Sil" : "Geri Al"],
+                dangerMode: true,
+            })
+                .then((willDelete) => {
+                    if (willDelete) {
+
+                        $.ajax({
+                            url: "/admin/product-category-delete",
+                            type: "POST",
+                            data: { id: productCategoryId, isActive: !productCategoryIsActive },
+                            success: function(result) {
+                                console.log(result);
+                                if (result != null) {
+                                    if (result.code == 30) {
+                                        swal("Silindi ! Bu bilgiler artık anasayfanızda gözükmeyecek !", {
+                                            icon: "success",
+                                        }).then((value) => {
+                                            location.reload();
+                                        });
+                                    }
+                                    if (result.code == 32) {
+                                        swal("Silme İşlemi Geri Alındı! Bu bilgiler artık ansayfanızda gözükecek !", {
+                                            icon: "success",
+                                        }).then((value) => {
+                                            location.reload();
+                                        });
+                                    }
+                                    if (result.code == 9998) {
+                                        swal("Erişim Reddedildi !", {
+                                            icon: "error",
+                                        });
+                                    }
+                                    if (result.code == 31) {
+                                        swal("Silinecek Eleman Bulunamadı !", {
+                                            icon: "error",
+                                        });
+                                    }
+                                }
+                            }
+                        });
+                    } else {
+                        swal(productCategoryIsActive ? "Silme işlemi iptal edildi!" : "Geri alma iptal edildi!");
+                    }
+                });
+        });
+
+    </script>
+}

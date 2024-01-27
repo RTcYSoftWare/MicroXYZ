@@ -1,0 +1,148 @@
+﻿@model List<HomePageSetting>
+@{
+    ViewData["Title"] = "HomePageSettings";
+    Layout = "~/Pages/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="vh-100">
+    <div class="col-12">
+        <div class="bg-light rounded h-100 p-4">
+            <div class="mb-4 d-flex flex-lg-row justify-content-between align-items-center">
+                <h6>HomePageSetting @Model.Count Adet Bulunmaktadır.</h6>
+                @if (ViewBag.IsActive)
+                {
+                    <a href="/admin/home-page-setting-edit" type="button" class="btn btn-outline-success"><i class="fa fa-plus me-2"></i>Yeni Ekle</a>
+                }
+            </div>
+
+            @if (Model.Any())
+            {
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Title</th>
+                            <th scope="col">Description</th>
+                            <th scope="col">Created At</th>
+                            <th scope="col">Durumu</th>
+                            <th scope="col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var homePageSetting in Model)
+                        {
+                            <tr>
+                                <td>@homePageSetting.Title</td>
+                                <td>@(homePageSetting.Description != null ? homePageSetting.Description.Length > 25 ? homePageSetting.Description.Substring(0,25) + "..." : homePageSetting.Description : null)</td>
+                                <td>@homePageSetting.CreatedAt</td>
+                                <td>
+                                    <p class="@(homePageSetting.IsActive ? "bg-success" : "bg-danger") table-is-active-baget ">
+                                        @(homePageSetting.IsActive ? "Aktif" : "Silindi")
+                                    </p>
+                                </td>
+                                <td>
+                                    @if (ViewBag.IsActive)
+                                    {
+                                        <a href="/admin/home-page-setting-edit/@homePageSetting.Id" class="m-0 btn btn-sm btn-sm-square btn-outline-warning"><i class="fa fa-pen"></i></a>
+                                    }
+
+                                    @if (homePageSetting.IsActive)
+                                    {
+                                        <button data="@homePageSetting.Id" data-isActive="@homePageSetting.IsActive" type="button" class="homePageSettingDeleteOrRestoreDeleteButton m-0 btn btn-sm btn-sm-square btn-outline-danger"><i class="fa fa-trash"></i></button>
+                                    }
+                                    else
+                                    {
+                                        <button data="@homePageSetting.Id" type="button" class="homePageSettingDeleteOrRestoreDeleteButton m-0 btn btn-sm btn-sm-square btn-outline-info"><i class="fa fa-recycle"></i></button>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                <div class="mb-4 d-flex flex-lg-row justify-content-between align-items-center">
+                    <h6>
+                        Not: Ana sayfanızda gözükmesini istediğiniz bigilerin aktif olduğundan emin olunuz. Birden fazla aktif olması halinde
+                        sıralamada ilk aktif olan ana sayfanızda gözükür.
+                    </h6>
+                </div>
+            }
+
+            else
+            {
+                <div class="mb-4 d-flex flex-lg-row justify-content-between align-items-center">
+                    <h6>Kayıtlı Veri Bulunamadı !</h6>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
+    <script>
+        $(".nav-link").removeClass("active");
+
+        $("#homePageSettingsNavItem").addClass("active");
+        //$("#processesNavItem").addClass("show");
+        //$(".processes-nav-item-menu").addClass("show")
+
+        $(".homePageSettingDeleteOrRestoreDeleteButton").click(function() {
+            var homePageSettingId = $(this).attr("data");
+            var homePageSettingIsActive = $(this).attr("data-isActive");
+
+            console.log(homePageSettingId);
+
+            swal({
+                title: homePageSettingIsActive ? "Silmek İstediğinize Emin Misiniz ?" : "Silinmiş Ögeyi Geri Almak İstediğinze Emin Misiniz ?",
+                text: homePageSettingIsActive ? "Bu işlemi silerseniz ana sayfanızda gözükmez!" : "Silinmiş ögeyi geri alırsanız ana sayfanızda gözükecektir !",
+                icon: "warning",
+                buttons: ["İptal", homePageSettingIsActive ? "Sil" : "Geri Al"],
+                dangerMode: true,
+            })
+                .then((willDelete) => {
+                    if (willDelete) {
+
+                        $.ajax({
+                            url: "/admin/home-page-setting-delete",
+                            type: "POST",
+                            data: { id: homePageSettingId, isActive: !homePageSettingIsActive },
+                            success: function(result) {
+                                console.log(result);
+                                if (result != null) {
+                                    if (result.code == 5) {
+                                        swal("Silindi ! Bu bilgiler artık anasayfanızda gözükmeyecek !", {
+                                            icon: "success",
+                                        }).then((value) => {
+                                            location.reload();
+                                        });
+                                    }
+                                    if (result.code == 7) {
+                                        swal("Silme İşlemi Geri Alındı! Bu bilgiler artık ansayfanızda gözükecek !", {
+                                            icon: "success",
+                                        }).then((value) => {
+                                            location.reload();
+                                        });
+                                    }
+                                    if (result.code == 9998) {
+                                        swal("Erişim Reddedildi !", {
+                                            icon: "error",
+                                        });
+                                    }
+                                    if (result.code == 6) {
+                                        swal("Silinecek Eleman Bulunamadı !", {
+                                            icon: "error",
+                                        });
+                                    }
+                                }
+                            }
+                        });
+                    } else {
+                        swal(homePageSettingIsActive ? "Silme işlemi iptal edildi!" : "Geri alma iptal edildi!");
+                    }
+                });
+        });
+
+    </script>
+}

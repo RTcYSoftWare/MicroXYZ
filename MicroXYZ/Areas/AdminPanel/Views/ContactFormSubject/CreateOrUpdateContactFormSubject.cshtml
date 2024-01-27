@@ -1,0 +1,49 @@
+﻿@model ContactFormSubject
+@{
+    ViewData["Title"] = "CreateOrUpdateContactFormSubject";
+    Layout = "~/Pages/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="vh-100">
+    <div class="col-12">
+        <div class="bg-light rounded h-100 p-4">
+            <h6 class="mb-4">@(Model.Id == 0 ? "Yeni ContactFormSubject Ekleyin" : "ContactFormSubject 'i Güncelleyin" )</h6>
+            <form asp-action="/admin/contact-form-subject-edit" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <input asp-for="Id" type="hidden" value="@Model.Id" />
+
+                <div class="mb-3">
+                    <label asp-for="Name" for="homePageSettingTitleInput" class="form-label">Name <span class="text-danger">*</span></label>
+                    <input asp-for="Name" type="text" class="form-control" id="homePageSettingTitleInput">
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+
+
+                @*                <div class="mb-3">
+                <label asp-for="Des" for="processPriceInput" class="form-label">Price <span class="text-danger">*</span></label>
+                <input asp-for="Price" type="text" class="form-control" id="processPriceInput" aria-describedby="processPriceHelp">
+                <span asp-validation-for="Price" class="text-danger"></span>
+                <div id="processPriceHelp" class="form-text">
+                Küsuratı "VİRGÜL (,)" ile ayırınız. Örn: ₺ 12,99 gibi.
+                </div>
+                </div>*@
+
+                <button type="submit" class="btn btn-primary">Kaydet</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+
+        $(".nav-link").removeClass("active");
+
+        $("#contactPageNavItem").addClass("active");
+        $("#contactPageNavItem").addClass("show");
+        $(".contact-page-nav-item-menu").addClass("show");
+
+    </script>
+}
+

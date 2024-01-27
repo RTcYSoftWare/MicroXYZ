@@ -1,0 +1,148 @@
+﻿@model List<AboutPageSetting>
+@{
+    ViewData["Title"] = "AboutPageSettings";
+    Layout = "~/Pages/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="vh-100">
+    <div class="col-12">
+        <div class="bg-light rounded h-100 p-4">
+            <div class="mb-4 d-flex flex-lg-row justify-content-between align-items-center">
+                <h6>AboutPageSetting @Model.Count Adet Bulunmaktadır.</h6>
+                @if (ViewBag.IsActive)
+                {
+                    <a href="/admin/about-page-setting-edit" type="button" class="btn btn-outline-success"><i class="fa fa-plus me-2"></i>Yeni Ekle</a>
+                }
+            </div>
+
+            @if (Model.Any())
+            {
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Title</th>
+                            <th scope="col">Description</th>
+                            <th scope="col">Phone</th>
+                            <th scope="col">Created At</th>
+                            <th scope="col">Durumu</th>
+                            <th scope="col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var aboutPageSetting in Model)
+                        {
+                            <tr>
+                                <td>@aboutPageSetting.Title</td>
+                                <td>@(aboutPageSetting.Description != null ? aboutPageSetting.Description.Length > 25 ? aboutPageSetting.Description.Substring(0,25) + "..." : aboutPageSetting.Description : null)</td>
+                                <td>@aboutPageSetting.Title2</td>
+                                <td>@aboutPageSetting.CreatedAt</td>
+                                <td>
+                                    <p class="@(aboutPageSetting.IsActive ? "bg-success" : "bg-danger") table-is-active-baget ">
+                                        @(aboutPageSetting.IsActive ? "Aktif" : "Silindi")
+                                    </p>
+                                </td>
+                                <td>
+                                    @if (ViewBag.IsActive)
+                                    {
+                                        <a href="/admin/about-page-setting-edit/@aboutPageSetting.Id" class="m-0 btn btn-sm btn-sm-square btn-outline-warning"><i class="fa fa-pen"></i></a>
+                                    }
+
+                                    @if (aboutPageSetting.IsActive)
+                                    {
+                                        <button data="@aboutPageSetting.Id" data-isActive="@aboutPageSetting.IsActive" type="button" class="aboutPageSettingDeleteOrRestoreDeleteButton m-0 btn btn-sm btn-sm-square btn-outline-danger"><i class="fa fa-trash"></i></button>
+                                    }
+                                    else
+                                    {
+                                        <button data="@aboutPageSetting.Id" type="button" class="aboutPageSettingDeleteOrRestoreDeleteButton m-0 btn btn-sm btn-sm-square btn-outline-info"><i class="fa fa-recycle"></i></button>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                <div class="mb-4 d-flex flex-lg-row justify-content-between align-items-center">
+                    <h6>
+                        Not: Ana sayfanızda gözükmesini istediğiniz bigilerin aktif olduğundan emin olunuz. Birden fazla aktif olması halinde
+                        sıralamada ilk aktif olan ana sayfanızda gözükür.
+                    </h6>
+                </div>
+            }
+
+            else
+            {
+                <div class="mb-4 d-flex flex-lg-row justify-content-between align-items-center">
+                    <h6>Kayıtlı Veri Bulunamadı !</h6>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+
+    <script>
+        $(".nav-link").removeClass("active");
+
+        $("#aboutPageNavItem").addClass("active");
+        $("#aboutPageNavItem").addClass("show");
+        $(".about-page-nav-item-menu").addClass("show");
+
+        $(".aboutPageSettingDeleteOrRestoreDeleteButton").click(function() {
+            var aboutPageSettingId = $(this).attr("data");
+            var aboutPageSettingIsActive = $(this).attr("data-isActive");
+
+            console.log(aboutPageSettingId);
+
+            swal({
+                title: aboutPageSettingIsActive ? "Silmek İstediğinize Emin Misiniz ?" : "Silinmiş Ögeyi Geri Almak İstediğinze Emin Misiniz ?",
+                text: aboutPageSettingIsActive ? "Bu işlemi silerseniz ana sayfanızda gözükmez!" : "Silinmiş ögeyi geri alırsanız ana sayfanızda gözükecektir !",
+                icon: "warning",
+                buttons: ["İptal", aboutPageSettingIsActive ? "Sil" : "Geri Al"],
+                dangerMode: true,
+            })
+                .then((willDelete) => {
+                    if (willDelete) {
+
+                        $.ajax({
+                            url: "/admin/about-page-delete",
+                            type: "POST",
+                            data: { id: aboutPageSettingId, isActive: !aboutPageSettingIsActive },
+                            success: function(result) {
+                                console.log(result);
+                                if (result != null) {
+                                    if (result.code == 50) {
+                                        swal("Silindi ! Bu bilgiler artık anasayfanızda gözükmeyecek !", {
+                                            icon: "success",
+                                        }).then((value) => {
+                                            location.reload();
+                                        });
+                                    }
+                                    if (result.code == 52) {
+                                        swal("Silme İşlemi Geri Alındı! Bu bilgiler artık ansayfanızda gözükecek !", {
+                                            icon: "success",
+                                        }).then((value) => {
+                                            location.reload();
+                                        });
+                                    }
+                                    if (result.code == 9998) {
+                                        swal("Erişim Reddedildi !", {
+                                            icon: "error",
+                                        });
+                                    }
+                                    if (result.code == 51) {
+                                        swal("Silinecek Eleman Bulunamadı !", {
+                                            icon: "error",
+                                        });
+                                    }
+                                }
+                            }
+                        });
+                    } else {
+                        swal(aboutPageSettingIsActive ? "Silme işlemi iptal edildi!" : "Geri alma iptal edildi!");
+                    }
+                });
+        });
+
+    </script>
+}

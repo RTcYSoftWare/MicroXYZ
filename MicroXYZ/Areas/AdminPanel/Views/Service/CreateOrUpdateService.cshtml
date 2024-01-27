@@ -1,0 +1,67 @@
+﻿@model Service
+@{
+    ViewData["Title"] = "CreateOrUpdateService";
+    Layout = "~/Pages/Shared/_LayoutAdmin.cshtml";
+}
+
+<div>
+    <div class="col-12">
+        <div class="bg-light rounded h-100 p-4">
+            <h6 class="mb-4">@(Model.Id == 0 ? "Yeni Service Ekleyin" : "Service 'i Güncelleyin" )</h6>
+            <form asp-action="/admin/service-edit" method="post" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <input asp-for="Id" type="hidden" value="@Model.Id" />
+
+                <div class="mb-3">
+                    <label asp-for="Title" for="serviceTitleInput" class="form-label">Title <span class="text-danger">*</span></label>
+                    <input asp-for="Title" type="text" class="form-control" id="serviceTitleInput">
+                    <span asp-validation-for="Title" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Description" for="serviceDescInput" class="form-label">Description <span class="text-danger">*</span></label>
+                    <textarea asp-for="Description" type="text" class="form-control" id="serviceDescInput"></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+
+                @*<div class="mb-3">
+                    <label asp-for="Icon" for="serviceIconInput" class="form-label">Icon <span class="text-danger">*</span></label>
+                    <input asp-for="Icon" type="text" class="form-control" id="serviceIconInput" aria-describedby="serviceIconHelp">
+                    <span asp-validation-for="Icon" class="text-danger"></span>
+                    <div id="serviceIconHelp" class="form-text">
+                        Kullanabileceğiniz iconlar: 
+                        tf-ion-laptop, tf-genius, tf-dial, tf-target3, tf-lifesaver
+                    </div>
+                </div>*@
+
+                <div class="mb-3">
+                    <label for="homePageSettingVideoInput" class="form-label">Icon <span class="text-danger">*</span></label>
+                    <input name="formFile" type="file" class="form-control" id="homePageSettingVideoInput">
+                    <span class="text-danger"></span>
+                </div>
+
+                @if (Model.Icon != null)
+                {
+                    <div class="mb-4" style="width: 100%; box-sizing: border-box; position: relative;">
+                        <label for="homePageSettingImage" class="form-label">Yüklü Icon</label>
+                        <br>
+                        <img style="width: 10%; box-sizing: border-box; position: relative;" id="homePageSettingImage" src="/page-icons/@Model.Icon" />
+                    </div>
+                }
+
+                <button type="submit" class="btn btn-primary">Kaydet</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+
+        $(".nav-link").removeClass("active");
+
+        $("#servicesNavItem").addClass("active");
+
+    </script>
+}

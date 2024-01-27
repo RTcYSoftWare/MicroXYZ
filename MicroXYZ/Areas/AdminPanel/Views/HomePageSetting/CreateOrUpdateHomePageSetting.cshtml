@@ -1,0 +1,72 @@
+﻿@model HomePageSetting
+@{
+    ViewData["Title"] = "CreateOrUpdateHomePageSetting";
+    Layout = "~/Pages/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="">
+    <div class="col-12">
+        <div class="bg-light rounded h-100 p-4">
+            <h6 class="mb-4">@(Model.Id == 0 ? "Yeni HomePageSetting Ekleyin" : "HomePageSetting 'i Güncelleyin" )</h6>
+            <form asp-action="/admin/home-page-setting-edit" method="post" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <input asp-for="Id" type="hidden" value="@Model.Id" />
+
+                <div class="mb-3">
+                    <label asp-for="Title" for="homePageSettingTitleInput" class="form-label">Title <span class="text-danger">*</span></label>
+                    <input asp-for="Title" type="text" class="form-control" id="homePageSettingTitleInput">
+                    <span asp-validation-for="Title" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Description" for="homePageSettingDescInput" class="form-label">Description <span class="text-danger">*</span></label>
+                    <textarea asp-for="Description" type="text" class="form-control" id="homePageSettingDescInput"></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Video" for="homePageSettingVideoInput" class="form-label">Video Url <span class="text-danger">*</span></label>
+                    <input asp-for="Video" type="text" class="form-control" id="homePageSettingVideoInput">
+                    <span asp-validation-for="Video" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label for="homePageSettingVideoInput" class="form-label">Img <span class="text-danger">*</span></label>
+                    <input name="formFile" type="file" class="form-control" id="homePageSettingVideoInput">
+                    <span class="text-danger"></span>
+                </div>
+
+                @if (Model.Image != null)
+                {
+                    <div class="mb-3" style="width: 100%; box-sizing: border-box; position: relative;">
+                        <label for="homePageSettingImage" class="form-label">Yüklü Fotoğraf</label>
+                        <img style="width: 100%; box-sizing: border-box; position: relative;" id="homePageSettingImage" src="/page-images/@Model.Image" />
+                    </div>
+                }
+
+                @*                <div class="mb-3">
+                <label asp-for="Des" for="processPriceInput" class="form-label">Price <span class="text-danger">*</span></label>
+                <input asp-for="Price" type="text" class="form-control" id="processPriceInput" aria-describedby="processPriceHelp">
+                <span asp-validation-for="Price" class="text-danger"></span>
+                <div id="processPriceHelp" class="form-text">
+                Küsuratı "VİRGÜL (,)" ile ayırınız. Örn: ₺ 12,99 gibi.
+                </div>
+                </div>*@
+
+                <button type="submit" class="btn btn-primary">Kaydet</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script>
+
+        $(".nav-link").removeClass("active");
+
+        $("#homePageSettingsNavItem").addClass("active");
+
+    </script>
+}

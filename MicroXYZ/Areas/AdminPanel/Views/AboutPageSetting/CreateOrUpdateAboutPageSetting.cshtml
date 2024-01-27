@@ -1,0 +1,81 @@
+﻿@model AboutPageSetting
+@{
+    ViewData["Title"] = "CreateOrUpdateAboutPageSetting";
+    Layout = "~/Pages/Shared/_LayoutAdmin.cshtml";
+}
+
+<div class="">
+    <div class="col-12">
+        <div class="bg-light rounded h-100 p-4">
+            <h6 class="mb-4">@(Model.Id == 0 ? "Yeni ContactPageSetting Ekleyin" : "ContactPageSetting 'i Güncelleyin" )</h6>
+            <form asp-action="/admin/about-page-setting-edit" method="post" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <input asp-for="Id" type="hidden" value="@Model.Id" />
+
+                <div class="mb-3">
+                    <label asp-for="Title" for="homePageSettingTitleInput" class="form-label">Title (Tema gereği sadece iki kelime giriniz. En daha az ne daha çok.)<span class="text-danger">*</span></label>
+                    <input asp-for="Title" type="text" class="form-control" id="homePageSettingTitleInput">
+                    <span asp-validation-for="Title" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Title2" for="homePageSettingTitleInput" class="form-label">Title2 (Resmin yanındaki title) <span class="text-danger">*</span></label>
+                    <input asp-for="Title2" type="text" class="form-control" id="homePageSettingTitleInput">
+                    <span asp-validation-for="Title2" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Description" for="homePageSettingDescInput" class="form-label">Description <span class="text-danger">*</span></label>
+                    <textarea asp-for="Description" type="text" class="form-control" id="homePageSettingDescInput"></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="CallToActionTitle" for="homePageSettingVideoInput" class="form-label">CallToActionTitle <span class="text-danger">*</span></label>
+                    <input asp-for="CallToActionTitle" type="text" class="form-control" id="homePageSettingVideoInput">
+                    <span asp-validation-for="CallToActionTitle" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="CallToActionDescription" for="homePageSettingVideoInput" class="form-label">CallToActionDescription <span class="text-danger">*</span></label>
+                    <input asp-for="CallToActionDescription" type="text" class="form-control" id="homePageSettingVideoInput">
+                    <span asp-validation-for="CallToActionDescription" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="CallToActionButtonText" for="homePageSettingVideoInput" class="form-label">CallToActionButtonText <span class="text-danger">*</span></label>
+                    <input asp-for="CallToActionButtonText" type="text" class="form-control" id="homePageSettingVideoInput">
+                    <span asp-validation-for="CallToActionButtonText" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label for="homePageSettingVideoInput" class="form-label">Image <span class="text-danger">*</span></label>
+                    <input name="formFile" type="file" class="form-control" id="homePageSettingVideoInput">
+                </div>
+
+                @if (Model.Image != null)
+                {
+                    <div class="mb-3" style="width: 100%; box-sizing: border-box; position: relative;">
+                        <label for="homePageSettingImage" class="form-label">Yüklü Fotoğraf</label>
+                        <img style="width: 100%; box-sizing: border-box; position: relative;" id="homePageSettingImage" src="/page-images/@Model.Image" />
+                    </div>
+                }
+
+                <button type="submit" class="btn btn-primary">Kaydet</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+
+        $(".nav-link").removeClass("active");
+
+        $("#aboutPageNavItem").addClass("active");
+        $("#aboutPageNavItem").addClass("show");
+        $(".about-page-nav-item-menu").addClass("show");
+
+    </script>
+}
